@@ -171,10 +171,24 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Create GitHub Release
+
+      - name: Create GitHub Release (without assets)
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload assets one by one
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for artifact_dir in artifacts/*/; do
+            if [ -d "$artifact_dir" ]; then
+              file_path=$(find "$artifact_dir" -type f | head -n 1)
+              if [ -n "$file_path" ]; then
+                echo "Uploading $file_path"
+                gh release upload "${{ github.ref_name }}" "$file_path" --clobber
+              fi
+            fi
+          done
