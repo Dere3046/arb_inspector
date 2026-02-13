@@ -12,9 +12,9 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  # Linux native build (x86_64)
+  # Linux native build (x86_64) on Ubuntu 22.04
   build-linux-native:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         target: [x86_64-unknown-linux-gnu]
@@ -33,9 +33,9 @@ jobs:
           path: target/${{ matrix.target }}/release/arb_inspector
           if-no-files-found: error
 
-  # Linux cross-compilation (i686, aarch64, armv7)
+  # Linux cross-compilation (i686, aarch64, armv7) on Ubuntu 22.04
   build-linux-cross:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         target:
@@ -73,7 +73,7 @@ jobs:
           path: target/${{ matrix.target }}/release/arb_inspector
           if-no-files-found: error
 
-  # Windows builds (unchanged)
+  # Windows builds
   build-windows:
     runs-on: windows-latest
     strategy:
@@ -96,7 +96,7 @@ jobs:
           path: target/${{ matrix.target }}/release/arb_inspector.exe
           if-no-files-found: error
 
-  # macOS builds (unchanged)
+  # macOS builds
   build-macos:
     runs-on: macos-latest
     strategy:
