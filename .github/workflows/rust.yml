@@ -171,25 +171,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: Prepare release files
-        run: |
-          mkdir release_files
-          for dir in artifacts/*/; do
-            artifact_name=$(basename "$dir")
-            file_path=$(find "$dir" -type f | head -n1)
-            if [ -n "$file_path" ]; then
-              cp "$file_path" "release_files/$artifact_name"
-            fi
-          done
-
-      - name: Display release files
-        run: ls -l release_files
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release_files/*
+          files: artifacts/**/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
