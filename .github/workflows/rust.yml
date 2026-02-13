@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -12,7 +13,6 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  # Linux x86_64 (native)
   build-linux-x86_64:
     runs-on: ubuntu-22.04
     steps:
@@ -30,7 +30,6 @@ jobs:
           path: target/x86_64-unknown-linux-gnu/release/arb_inspector
           if-no-files-found: error
 
-  # Linux i686 (32-bit)
   build-linux-i686:
     runs-on: ubuntu-22.04
     steps:
@@ -43,7 +42,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-multilib
-      - name: Set linker and flags for i686
+      - name: Set linker
         run: |
           echo "CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=gcc" >> $GITHUB_ENV
           echo "CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_RUSTFLAGS=-C link-arg=-m32" >> $GITHUB_ENV
@@ -56,7 +55,6 @@ jobs:
           path: target/i686-unknown-linux-gnu/release/arb_inspector
           if-no-files-found: error
 
-  # Linux aarch64 (ARM64)
   build-linux-aarch64:
     runs-on: ubuntu-22.04
     steps:
@@ -80,7 +78,6 @@ jobs:
           path: target/aarch64-unknown-linux-gnu/release/arb_inspector
           if-no-files-found: error
 
-  # Linux armv7 (ARM32 hardfloat)
   build-linux-armv7:
     runs-on: ubuntu-22.04
     steps:
@@ -104,14 +101,11 @@ jobs:
           path: target/armv7-unknown-linux-gnueabihf/release/arb_inspector
           if-no-files-found: error
 
-  # Windows builds
   build-windows:
     runs-on: windows-latest
     strategy:
       matrix:
-        target:
-          - x86_64-pc-windows-msvc
-          - i686-pc-windows-msvc
+        target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc]
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -127,14 +121,11 @@ jobs:
           path: target/${{ matrix.target }}/release/arb_inspector.exe
           if-no-files-found: error
 
-  # macOS builds
   build-macos:
     runs-on: macos-latest
     strategy:
       matrix:
-        target:
-          - x86_64-apple-darwin
-          - aarch64-apple-darwin
+        target: [x86_64-apple-darwin, aarch64-apple-darwin]
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -149,3 +140,31 @@ jobs:
           name: arb_inspector-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/arb_inspector
           if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build-linux-x86_64
+      - build-linux-i686
+      - build-linux-aarch64
+      - build-linux-armv7
+      - build-windows
+      - build-macos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
