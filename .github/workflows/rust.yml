@@ -1,9 +1,9 @@
+```yaml
 name: CI
 
 on:
   push:
     branches: [ "main" ]
-    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -21,15 +21,19 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-gnu
-      - name: Build release
-        run: cargo build --release --target x86_64-unknown-linux-gnu -v
-      - name: Rename artifact
-        run: cp target/x86_64-unknown-linux-gnu/release/arb_inspector arb_inspector-x86_64-unknown-linux-gnu
+      - name: Install musl-tools for static linking
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+      - name: Build release (static)
+        run: |
+          RUSTFLAGS="-C target-feature=+crt-static" \
+          cargo build --release --target x86_64-unknown-linux-gnu -v
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-x86_64-unknown-linux-gnu
-          path: arb_inspector-x86_64-unknown-linux-gnu
+          path: target/x86_64-unknown-linux-gnu/release/arb_inspector
           if-no-files-found: error
 
   build-linux-i686:
@@ -43,20 +47,18 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-multilib
-      - name: Set linker
+          sudo apt-get install -y gcc-multilib musl-tools
+      - name: Configure linker
+        run: echo "CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=gcc" >> $GITHUB_ENV
+      - name: Build release (static)
         run: |
-          echo "CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_LINKER=gcc" >> $GITHUB_ENV
-          echo "CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_RUSTFLAGS=-C link-arg=-m32" >> $GITHUB_ENV
-      - name: Build release
-        run: cargo build --release --target i686-unknown-linux-gnu -v
-      - name: Rename artifact
-        run: cp target/i686-unknown-linux-gnu/release/arb_inspector arb_inspector-i686-unknown-linux-gnu
+          RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-m32" \
+          cargo build --release --target i686-unknown-linux-gnu -v
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-i686-unknown-linux-gnu
-          path: arb_inspector-i686-unknown-linux-gnu
+          path: target/i686-unknown-linux-gnu/release/arb_inspector
           if-no-files-found: error
 
   build-linux-aarch64:
@@ -70,18 +72,18 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-      - name: Set linker
+          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
+      - name: Configure linker
         run: echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-      - name: Build release
-        run: cargo build --release --target aarch64-unknown-linux-gnu -v
-      - name: Rename artifact
-        run: cp target/aarch64-unknown-linux-gnu/release/arb_inspector arb_inspector-aarch64-unknown-linux-gnu
+      - name: Build release (static)
+        run: |
+          RUSTFLAGS="-C target-feature=+crt-static" \
+          cargo build --release --target aarch64-unknown-linux-gnu -v
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-aarch64-unknown-linux-gnu
-          path: arb_inspector-aarch64-unknown-linux-gnu
+          path: target/aarch64-unknown-linux-gnu/release/arb_inspector
           if-no-files-found: error
 
   build-linux-armv7:
@@ -95,25 +97,27 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-linux-gnueabihf
-      - name: Set linker
+          sudo apt-get install -y gcc-arm-linux-gnueabihf musl-tools
+      - name: Configure linker
         run: echo "CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
-      - name: Build release
-        run: cargo build --release --target armv7-unknown-linux-gnueabihf -v
-      - name: Rename artifact
-        run: cp target/armv7-unknown-linux-gnueabihf/release/arb_inspector arb_inspector-armv7-unknown-linux-gnueabihf
+      - name: Build release (static)
+        run: |
+          RUSTFLAGS="-C target-feature=+crt-static" \
+          cargo build --release --target armv7-unknown-linux-gnueabihf -v
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-armv7-unknown-linux-gnueabihf
-          path: arb_inspector-armv7-unknown-linux-gnueabihf
+          path: target/armv7-unknown-linux-gnueabihf/release/arb_inspector
           if-no-files-found: error
 
   build-windows:
     runs-on: windows-latest
     strategy:
       matrix:
-        target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc]
+        target:
+          - x86_64-pc-windows-msvc
+          - i686-pc-windows-msvc
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -122,21 +126,20 @@ jobs:
           targets: ${{ matrix.target }}
       - name: Build release
         run: cargo build --release --target ${{ matrix.target }} -v
-      - name: Rename artifact
-        shell: bash
-        run: cp target/${{ matrix.target }}/release/arb_inspector.exe arb_inspector-${{ matrix.target }}.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-${{ matrix.target }}
-          path: arb_inspector-${{ matrix.target }}.exe
+          path: target/${{ matrix.target }}/release/arb_inspector.exe
           if-no-files-found: error
 
   build-macos:
     runs-on: macos-latest
     strategy:
       matrix:
-        target: [x86_64-apple-darwin, aarch64-apple-darwin]
+        target:
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -145,11 +148,10 @@ jobs:
           targets: ${{ matrix.target }}
       - name: Build release
         run: cargo build --release --target ${{ matrix.target }} -v
-      - name: Rename artifact
-        run: cp target/${{ matrix.target }}/release/arb_inspector arb_inspector-${{ matrix.target }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-${{ matrix.target }}
-          path: arb_inspector-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/arb_inspector
           if-no-files-found: error
+```
