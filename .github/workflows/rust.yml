@@ -1,4 +1,3 @@
-```yaml
 name: CI
 
 on:
@@ -154,4 +153,3 @@ jobs:
           name: arb_inspector-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/arb_inspector
           if-no-files-found: error
-```
