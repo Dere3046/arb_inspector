@@ -172,7 +172,7 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create GitHub Release (without assets)
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
@@ -183,12 +183,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          echo "Uploading assets to release: $TAG_NAME"
           for artifact_dir in artifacts/*/; do
             if [ -d "$artifact_dir" ]; then
               file_path=$(find "$artifact_dir" -type f | head -n 1)
-              if [ -n "$file_path" ]; then
+              if [ -n "$file_path" ] && [ -f "$file_path" ]; then
                 echo "Uploading $file_path"
-                gh release upload "${{ github.ref_name }}" "$file_path" --clobber
+                gh release upload "$TAG_NAME" "$file_path" --clobber
               fi
             fi
           done
