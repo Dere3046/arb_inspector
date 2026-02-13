@@ -23,15 +23,13 @@ jobs:
           targets: x86_64-unknown-linux-gnu
       - name: Build release
         run: cargo build --release --target x86_64-unknown-linux-gnu -v
-      - name: Prepare artifact
-        run: |
-          mkdir -p staging
-          cp target/x86_64-unknown-linux-gnu/release/arb_inspector staging/arb_inspector-x86_64-unknown-linux-gnu
+      - name: Rename artifact
+        run: cp target/x86_64-unknown-linux-gnu/release/arb_inspector arb_inspector-x86_64-unknown-linux-gnu
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-x86_64-unknown-linux-gnu
-          path: staging/
+          path: arb_inspector-x86_64-unknown-linux-gnu
           if-no-files-found: error
 
   build-linux-i686:
@@ -52,15 +50,13 @@ jobs:
           echo "CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_RUSTFLAGS=-C link-arg=-m32" >> $GITHUB_ENV
       - name: Build release
         run: cargo build --release --target i686-unknown-linux-gnu -v
-      - name: Prepare artifact
-        run: |
-          mkdir -p staging
-          cp target/i686-unknown-linux-gnu/release/arb_inspector staging/arb_inspector-i686-unknown-linux-gnu
+      - name: Rename artifact
+        run: cp target/i686-unknown-linux-gnu/release/arb_inspector arb_inspector-i686-unknown-linux-gnu
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-i686-unknown-linux-gnu
-          path: staging/
+          path: arb_inspector-i686-unknown-linux-gnu
           if-no-files-found: error
 
   build-linux-aarch64:
@@ -79,15 +75,13 @@ jobs:
         run: echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
       - name: Build release
         run: cargo build --release --target aarch64-unknown-linux-gnu -v
-      - name: Prepare artifact
-        run: |
-          mkdir -p staging
-          cp target/aarch64-unknown-linux-gnu/release/arb_inspector staging/arb_inspector-aarch64-unknown-linux-gnu
+      - name: Rename artifact
+        run: cp target/aarch64-unknown-linux-gnu/release/arb_inspector arb_inspector-aarch64-unknown-linux-gnu
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-aarch64-unknown-linux-gnu
-          path: staging/
+          path: arb_inspector-aarch64-unknown-linux-gnu
           if-no-files-found: error
 
   build-linux-armv7:
@@ -106,15 +100,13 @@ jobs:
         run: echo "CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
       - name: Build release
         run: cargo build --release --target armv7-unknown-linux-gnueabihf -v
-      - name: Prepare artifact
-        run: |
-          mkdir -p staging
-          cp target/armv7-unknown-linux-gnueabihf/release/arb_inspector staging/arb_inspector-armv7-unknown-linux-gnueabihf
+      - name: Rename artifact
+        run: cp target/armv7-unknown-linux-gnueabihf/release/arb_inspector arb_inspector-armv7-unknown-linux-gnueabihf
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-armv7-unknown-linux-gnueabihf
-          path: staging/
+          path: arb_inspector-armv7-unknown-linux-gnueabihf
           if-no-files-found: error
 
   build-windows:
@@ -130,16 +122,14 @@ jobs:
           targets: ${{ matrix.target }}
       - name: Build release
         run: cargo build --release --target ${{ matrix.target }} -v
-      - name: Prepare artifact
+      - name: Rename artifact
         shell: bash
-        run: |
-          mkdir -p staging
-          cp target/${{ matrix.target }}/release/arb_inspector.exe staging/arb_inspector-${{ matrix.target }}.exe
+        run: cp target/${{ matrix.target }}/release/arb_inspector.exe arb_inspector-${{ matrix.target }}.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-${{ matrix.target }}
-          path: staging/
+          path: arb_inspector-${{ matrix.target }}.exe
           if-no-files-found: error
 
   build-macos:
@@ -155,15 +145,13 @@ jobs:
           targets: ${{ matrix.target }}
       - name: Build release
         run: cargo build --release --target ${{ matrix.target }} -v
-      - name: Prepare artifact
-        run: |
-          mkdir -p staging
-          cp target/${{ matrix.target }}/release/arb_inspector staging/arb_inspector-${{ matrix.target }}
+      - name: Rename artifact
+        run: cp target/${{ matrix.target }}/release/arb_inspector arb_inspector-${{ matrix.target }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: arb_inspector-${{ matrix.target }}
-          path: staging/
+          path: arb_inspector-${{ matrix.target }}
           if-no-files-found: error
 
   release:
