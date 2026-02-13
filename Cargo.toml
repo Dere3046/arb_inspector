@@ -1,0 +1,9 @@
+[package]
+name = "arb_inspector"
+version = "0.1.0"
+authors = ["Dere3046"]
+edition = "2024"
+license = "MIT"
+description = "Extract OEM metadata (Major, Minor, Anti-Rollback) from xbl_config.img"
+
+[dependencies]
