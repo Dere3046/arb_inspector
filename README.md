@@ -1,15 +1,15 @@
 # arb_inspector
 
-`arb_inspector` is a command-line tool for extracting OEM metadata from Qualcomm `xbl_config.img` firmware images, including the major version, minor version, and anti-rollback version.
+[English](README.md) | [中文](README_zh.md)
 
-[中文](README_zh.md)
+`arb_inspector` is a command-line tool for extracting OEM metadata from Qualcomm `xbl_config.img` firmware images, including the major version, minor version, and anti-rollback version.
 
 ## Features
 
-- Parses ELF-format `xbl_config.img` files  
-- Automatically locates and reads the HASH segment containing OEM metadata  
-- Outputs OEM Major, Minor, and Anti-Rollback version information  
-- Lightweight, relies only on the Rust standard library, no additional runtime required  
+- Parses ELF-format `xbl_config.img` files
+- Automatically locates and reads the HASH segment containing OEM metadata
+- Outputs OEM Major, Minor, and Anti-Rollback version information
+- Lightweight, relies only on the Rust standard library, no additional runtime required
 
 ## How It Works
 
@@ -45,6 +45,25 @@ OEM Metadata from xbl_config.img:
   Minor Version         : 0
   Anti-Rollback Version : 0
 ```
+
+## About Parsing Coverage
+
+`arb_inspector` is based on analysis of known firmware samples and uses heuristic rules to locate the HASH segment and extract OEM metadata. While it works correctly on most devices, **it cannot guarantee parsing all versions of `xbl_config.img` files** for the following reasons:
+
+- Firmware formats may change with vendor updates.
+- Some customized firmwares may use non‑standard segment structures or encryption/compression.
+- Heuristic rules need to balance accuracy and coverage, potentially missing some variants.
+
+## If the Tool Fails to Parse Your File
+
+If you encounter a parsing failure, feel free to submit an **Issue** on the GitHub repository, and provide the following information to help improve the tool:
+
+- Device model and firmware source
+- Attach the `xbl_config.img` file (if permitted)
+- Expected ARB value (if known)
+- Full output of the tool when run
+
+We will continuously optimize the rules based on feedback to support more firmware versions. Thank you for your understanding and support!
 
 ## License
 
