@@ -31,10 +31,11 @@
 ## 使用方法
 
 ```bash
-arb_inspector <xbl_config.img>
+arb_inspector [--debug] <xbl_config.img>
 ```
 
-- `<xbl_config.img>`：输入的固件镜像文件路径。
+- `<xbl_config.img>`：输入的固件镜像文件路径。  
+- `--debug`（或 `-d`）：可选参数，启用详细输出，显示扫描了哪些段以及最终选中某个段的原因。
 
 ### 示例
 
@@ -44,26 +45,22 @@ OEM Metadata from xbl_config.img:
   Major Version         : 3
   Minor Version         : 0
   Anti-Rollback Version : 0
+
+$ arb_inspector --debug xbl_config.img
+[DEBUG] Scanning segment 0 at file offset 0x0 (size 0x1c8)
+[DEBUG] Scanning segment 6 at file offset 0x5d000 (size 0x130c)
+[DEBUG] Segment at file offset 0x5d000: possible header at offset +0x4 (file 0x5d004)
+[DEBUG]  -> OEM at +0x40 (file 0x5d040): major=3, minor=0, arb=0
+[DEBUG] >>> SELECTED segment 6 (offset 0x5d000) with header at +0x4
+OEM Metadata from xbl_config.img:
+  Major Version         : 3
+  Minor Version         : 0
+  Anti-Rollback Version : 0
 ```
 
-## 关于解析覆盖率
+## 局限性
 
-`arb_inspector` 基于对已知固件样本的分析，通过启发式规则定位 HASH 段并提取 OEM 元数据。虽然它在大多数设备上能够正常工作，但**无法保证能解析所有版本的 `xbl_config.img` 文件**，原因如下：
-
-- 固件格式可能随厂商更新而变化
-- 某些定制固件可能采用非标准的段结构或加密/压缩
-- 启发式规则需要平衡准确率和覆盖率，可能漏掉部分变体
-
-## 如果工具无法解析您的文件
-
-如果您遇到了解析失败的情况，欢迎在 GitHub 仓库提交 **Issue**，并提供以下信息以便改进：
-
-- 设备型号与固件来源
-- 附上 `xbl_config.img` 文件（如允许）
-- 预期的 ARB 值（如果有）
-- 工具运行时的完整输出
-
-我们会根据反馈不断优化规则，让工具支持更多固件版本。感谢您的理解与支持！
+`arb_inspector` 基于对已知固件样本的分析，通过启发式规则定位 HASH 段。虽然它在大多数设备上能够正常工作，但**无法保证能解析所有版本的 `xbl_config.img` 文件**，因为不同厂商可能有定制格式，或未来格式可能发生变化。如果工具解析失败，请使用 `--debug` 参数运行，并在 GitHub 提交 Issue，附上调试输出和固件文件（如允许）。
 
 ## 许可证
 
