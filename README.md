@@ -1,15 +1,15 @@
 # arb_inspector
 
-[English](README.md) | [中文](README_zh.md)
-
 `arb_inspector` is a command-line tool for extracting OEM metadata from Qualcomm `xbl_config.img` firmware images, including the major version, minor version, and anti-rollback version.
+
+[中文](README_zh.md)
 
 ## Features
 
-- Parses ELF-format `xbl_config.img` files
-- Automatically locates and reads the HASH segment containing OEM metadata
-- Outputs OEM Major, Minor, and Anti-Rollback version information
-- Lightweight, relies only on the Rust standard library, no additional runtime required
+- Parses ELF-format `xbl_config.img` files  
+- Automatically locates and reads the HASH segment containing OEM metadata  
+- Outputs OEM Major, Minor, and Anti-Rollback version information  
+- Lightweight, relies only on the Rust standard library, no additional runtime required  
 
 ## How It Works
 
@@ -31,10 +31,11 @@
 ## Usage
 
 ```bash
-arb_inspector <xbl_config.img>
+arb_inspector [--debug] <xbl_config.img>
 ```
 
-- `<xbl_config.img>`: Path to the input firmware image file.
+- `<xbl_config.img>`: Path to the input firmware image file.  
+- `--debug` (or `-d`): Optional flag to enable verbose output, showing which segments are scanned and why a particular segment is selected.
 
 ### Example
 
@@ -44,26 +45,22 @@ OEM Metadata from xbl_config.img:
   Major Version         : 3
   Minor Version         : 0
   Anti-Rollback Version : 0
+
+$ arb_inspector --debug xbl_config.img
+[DEBUG] Scanning segment 0 at file offset 0x0 (size 0x1c8)
+[DEBUG] Scanning segment 6 at file offset 0x5d000 (size 0x130c)
+[DEBUG] Segment at file offset 0x5d000: possible header at offset +0x4 (file 0x5d004)
+[DEBUG]  -> OEM at +0x40 (file 0x5d040): major=3, minor=0, arb=0
+[DEBUG] >>> SELECTED segment 6 (offset 0x5d000) with header at +0x4
+OEM Metadata from xbl_config.img:
+  Major Version         : 3
+  Minor Version         : 0
+  Anti-Rollback Version : 0
 ```
 
-## About Parsing Coverage
+## Limitations
 
-`arb_inspector` is based on analysis of known firmware samples and uses heuristic rules to locate the HASH segment and extract OEM metadata. While it works correctly on most devices, **it cannot guarantee parsing all versions of `xbl_config.img` files** for the following reasons:
-
-- Firmware formats may change with vendor updates.
-- Some customized firmwares may use non‑standard segment structures or encryption/compression.
-- Heuristic rules need to balance accuracy and coverage, potentially missing some variants.
-
-## If the Tool Fails to Parse Your File
-
-If you encounter a parsing failure, feel free to submit an **Issue** on the GitHub repository, and provide the following information to help improve the tool:
-
-- Device model and firmware source
-- Attach the `xbl_config.img` file (if permitted)
-- Expected ARB value (if known)
-- Full output of the tool when run
-
-We will continuously optimize the rules based on feedback to support more firmware versions. Thank you for your understanding and support!
+`arb_inspector` uses heuristic rules to locate the HASH segment based on analysis of known firmware samples. While it works correctly on most devices, **it cannot guarantee parsing all versions of `xbl_config.img` files** due to potential vendor‑specific variations, encryption, or future format changes. If the tool fails to parse your file, please run it with the `--debug` flag and open an issue on GitHub with the output and a copy of your file (if permitted).
 
 ## License
 
