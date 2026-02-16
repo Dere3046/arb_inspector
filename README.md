@@ -1,6 +1,6 @@
 # arb_inspector
 
-`arb_inspector` is a command-line tool for extracting OEM metadata from Qualcomm `xbl_config.img` firmware images, including the major version, minor version, and anti-rollback version.
+`arb_inspector` is a command-line tool for extracting OEM metadata from Qualcomm `xbl_config.img` firmware images, including the major version, minor version, and anti-rollback version. It performs ARB (放回滚) detection to help identify anti-rollback protection levels.
 
 [中文](README_zh.md)
 
