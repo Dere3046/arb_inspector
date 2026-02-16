@@ -1,0 +1,54 @@
+name: Build Android binaries
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target:
+          - armv7-linux-androideabi
+          - aarch64-linux-android
+          - i686-linux-android
+          - x86_64-linux-android
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK
+        run: sdkmanager "ndk;25.2.9519653"
+
+      - name: Set NDK environment
+        run: |
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+      - name: Build with cargo-ndk
+        run: cargo ndk -t ${{ matrix.target }} build --release
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: arb_inspector-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/arb_inspector
+          if-no-files-found: error
